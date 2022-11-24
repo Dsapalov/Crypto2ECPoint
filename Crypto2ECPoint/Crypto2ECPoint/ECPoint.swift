@@ -21,65 +21,66 @@ class ECPoint {
 
 extension ECPoint {
     
-    func AddECPoints(a: ECPoint, b:ECPoint) -> ECPoint {
+    func AddECPoints(b:ECPoint) -> ECPoint {
         
-        let m = (b.y - a.y) / (b.x - a.x)
+        let m = (b.y - self.y) / (b.x - self.x)
 
-        let x = m * m - a.x - b.x
-        let y = b.y + m * (a.x - x)
+        let x = m * m - self.x - b.x
+        let y = b.y + m * (self.x - x)
 
         return ECPoint(x: x, y: y)
     }
     
-    func DoubleECPoints(a: ECPoint) -> ECPoint {
+    func DoubleECPoints() -> ECPoint {
         // ??
-        var aFromFormula = 1
+        let aFromFormula = 1
         
-        var lambda = ((3 * (a.x ^ 2) + aFromFormula) / 2 * a.y) ^ 2
+        let lambda = ((3 * (self.x ^ 2) + aFromFormula) / 2 * self.y) ^ 2
         
-        var x =  lambda - 2 * a.x
-        var y =  (-a.y + lambda) * (a.x - x)
+        let x = lambda - 2 * self.x
+        let y = (-self.y + lambda) * (self.x - x)
         
         return ECPoint(x: x, y: y)
         
     }
     
-    func ScalarMult(a: ECPoint, k: Int) -> ECPoint {
+    func ScalarMult(k: Int) -> ECPoint {
         var result = ECPoint(x: 0, y: 0)
         
         var coefficient = k
         let bitLength = coefficient.bitWidth - coefficient.leadingZeroBitCount
         var partialCoefficient = 1
-        var partialResult = a
+        var partialResult = self
         var trail: [(Int, ECPoint)] = []
         
         for _ in 0..<bitLength {
             trail.append((partialCoefficient, partialResult))
             partialCoefficient <<= 1
-            partialResult = AddECPoints(a: partialResult, b: partialResult)
+            partialResult = AddECPoints(b: partialResult)
         }
         
         for (coef, res) in trail.reversed() {
             if coefficient >= coef {
                 coefficient = coefficient - coef
-                result = AddECPoints(a: result, b: res)
+                result = AddECPoints(b: res)
             }
         }
         
         return result
     }
     
-    func PrintECPoint(point: ECPoint) {
-        print("ECPoint: ", point)
+    // changed for using on UI
+    func PrintECPoint() -> String {
+        return "ECPoint:!!!!! " //point
     }
     
-    func ECPointToString(point: ECPoint) -> String {
-        return "ECPoint: x: \(point.x), y:\(point.y) "
+    func ECPointToString() -> String {
+        return "ECPoint: x: \(self.x), y:\(self.y) "
     }
     
-    func IsOnCurveCheck(a: ECPoint) -> Bool {
-        let lhs = a.y * a.y
-        let rhs = a.x * a.x * a.x + self.x * a.x + self.y
+    func IsOnCurveCheck() -> Bool {
+        let lhs = self.y * self.y
+        let rhs = self.x * self.x * self.x + self.x * self.x + self.y
 
         return lhs == rhs
     }
